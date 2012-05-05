@@ -1,0 +1,10 @@
+Class Critique
+
+Vertical display has a gravity element
+But we're not taking advantage of our horizontal space (could be if we had more data)
+Could use horizontal for time, then use length for weight (redundant of importance)
+
+Idea of transitions -- graph my taxes?
+Example page for animations/transitions
+
+Filtering, e.g. by court, date range

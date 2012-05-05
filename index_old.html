@@ -1,0 +1,144 @@
+<!DOCTYPE html> 
+<html>
+<head>
+<title>The Legal Family Tree</title>
+
+<link href="style.css" rel="stylesheet" type="text/css" />
+
+<!-- [if lt IE 8]>
+<script src="http://ie7-js.googlecode.com/svn/version/2.0(beta3)/IE8.js" type="text/javascript"></script>
+<![endif]--> 
+<script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'></script>
+<script src="http://raphaeljs.com/raphael.js" type="text/javascript" charset="utf-8"></script>
+<script type='text/javascript' src='infoviz-data.js'></script> 
+</head>
+<body>
+    <ul id="tree">
+    </ul>
+    
+<script type="text/javascript">
+    function makeTree(ulID, theCase) {
+        // recursive function for turning the cases into a tree of nested uls and lis
+        var theUL = $('#' + ulID);
+        theUL.append('<li>' + theCase.name + '</li>');
+        if (theCase.citedBy.length > 0) {
+            var theNewULID = cleanID(theCase.name).slice(0,9) +'-children';
+            theUL.append('<ul id="' + theNewULID + '"></ul>');
+            orderCitations(theCase.citedBy).forEach(function(item) {
+                //console.log(item.name)
+                makeTree(theNewULID,item);
+            });
+            var remainingCites = theCase.totalCites - theCase.citedBy.length;
+            $('#' + theNewULID).append('<li>' + remainingCites + ' more citations...');
+        }
+    }
+    
+    function cleanID(rawString) {
+        s = rawString.replace(/ /g,'');
+        return s.replace(".","-");
+    }
+    
+    function sortFunc(x, y) {
+        return x.year - y.year;
+    }
+    
+    function drawTree(paper, root, width, height) {
+        var xcoord = 10;
+        var topboxThickness = 40;
+        
+        // make top box
+        paper.rect(0,0,width,height).attr("fill","white").attr("stroke","white");
+        paper.rect(0,0,width,topboxThickness).attr("fill",'#ddffcc').attr("stroke", '#99bb88');
+        // todo: make title text wrap sanely
+        paper.text(width/2, topboxThickness/4, root.name + " (" + root.totalCites + ")").attr("font-size",14);
+        
+        // make the child nodes
+        for(var i in root.citedBy.sort(sortFunc)) {
+            var c = root.citedBy.sort(sortFunc)[i];
+            console.log(c.name);
+            // set size and horiz position of node
+            var influence = c.totalCites / 50;
+            if (influence < 5) {
+                influence = 5;
+                }
+            xcoord += influence;
+            if (xcoord % width < influence) {
+                xcoord += influence * 2;
+            }
+            if (xcoord % width + influence > width) {
+                xcoord = (xcoord + influence * 2) % width
+            } 
+            xcoord = xcoord % width;
+            // set vertical position of node based on year
+            var yearsAfter = c.year - root.year;
+            var totalYears = 2011 - root.year;
+            var ycoord = 5 + topboxThickness + influence + (height - 10 - topboxThickness) * (yearsAfter/(totalYears + 1));
+            // create path to node
+            var path = paper.path("M" + xcoord % width + ","+topboxThickness+"V" + ycoord);
+            path.attr("stroke", '#99bb88');
+            // create node
+            // todo: make nodes that are negative (in root.undercutBy) look like bombs (or otherwise look different)
+            var node = paper.circle(xcoord, ycoord, influence);
+            node.attr("fill",courtColors[c.court]).attr("stroke",courtColors[c.court]);
+            // let node know about its own case, other metadata
+            node.influence = influence;
+            node.xcoord = xcoord;
+            node.ycoord = ycoord;
+            node.c = c;
+            
+            // add animation characteristics
+            // show title and glow on hover
+            node.hover(function() {
+                // todo: make glow and labels fade in and out slightly
+                this.g = this.glow({color: "#bbb", width: 8});
+                // todo: make labels wrap sanely
+                this.caseLabel = paper.text(this.xcoord, this.ycoord + this.influence + 5,this.c.name).attr("fill","#555");
+            }, 
+                function() {
+                this.g.hide();
+                this.caseLabel.remove();
+                }); 
+            // make nodes with descendants clickable
+            if (c.citedBy.length > 0) {
+                node.click(function() {
+                    event.preventDefault();
+                    root = this.c;
+                    // todo: make this a nice animation instead of (just) clearing
+                    paper.clear();
+                    drawTree(paper,root,width,height);
+                });
+            }
+            // turn nodes that have descendents into links (so cursor changes)
+            if (c.citedBy.length > 0) {
+                node.attr("href","#");
+            }
+            xcoord += influence + 5;
+        }
+    };
+    
+    $(document).ready(function() {
+        console.log('Javascript is running');
+        var colors = ['#F03B20','#FEC44F', '#fef899', '#8856A7','#9EBCDA', '#ddd'];
+        // set up courts to colors hash
+        courtColors = {};
+        for(var i in courts) {
+            courtColors[courts[i]] = colors[i];
+        }
+        console.log(courtColors);
+        // our first case is Plessy
+        var root = plessy;
+        // set up Raffi
+        var width = 200;
+        var height = 350;
+        var paper = Raphael(10, 10,width,height);
+        
+        // draw the tree
+        drawTree(paper, root, width, height);
+        // todo: add legend for court colors, time axis
+
+        // html version
+        //makeTree('tree',root);
+    });
+</script>
+</body>
+</html>
