@@ -47,17 +47,16 @@ function drawParent(paper, node, height) {
     }
     var num_parents = drawParent(paper, node.parent, height);
     var x = num_parents * parent_width;
-    var attrs = {"fill": '#ddffcc',"stroke": '#99bb88', 'cursor': 'pointer', 'title': node.parent.name};
+    var attrs = {"fill-opacity" : 10,  "fill" : courtColors[node.parent.court], "stroke" : '#999', 'cursor': 'pointer', 'title': node.parent.name};
     var rect = paper.rect(x, 0, parent_width, height).attr(attrs);
     rect.c = node.parent;
-    // TODO: Maybe add tooltip with the case name?
     rect.hover(function() {
         this.g = this.glow({color: "#bbb", width: 8});
-	this.attr('fill', '#99bb88');
+	this.attr('fill', '#aaa');
     },
 	       function() {
 		   this.g.hide();
-		   this.attr('fill', '#ddffcc');
+		   this.attr('fill', courtColors[node.parent.court]);
 	       });
     rect.click(function() {
 	    paper.clear();
@@ -68,12 +67,12 @@ function drawParent(paper, node, height) {
 
 function drawRootCir(paper, root) {
     var radius = paper.height * .35;
-    var rootCircle = paper.circle(0, radius, radius).attr("fill",'#ddffcc').attr("stroke", '#99bb88');
+    var rootCircle = paper.circle(0, radius, radius).attr({"fill-opacity" : 10,  "fill" : courtColors[root.court], "stroke" : '#999'});
     var num_parents = drawParent(paper, root, radius * 2);    
     var parent_offset = num_parents*parent_width;
     var label_x = parent_offset + (radius  - parent_offset)/2;
     var attrs = {"font-size": 16};  
-    wrapText(paper, label_x, paper.height/4, radius - (parent_offset + 2*padding), root.label(), attrs);
+    wrapText(paper, label_x, radius - padding, radius - (parent_offset + 2*padding), root.label(), attrs);
     rootCircle.transform('t' + parent_offset + ',0');
     return rootCircle; 
 }
@@ -223,6 +222,8 @@ function drawTree(paper, root) {
         }
         // redraw root circle and label so it's on top
         drawRootCir(paper, root);
+        
+        // TODO: make nodes always on top of lines
     }
 };
 
