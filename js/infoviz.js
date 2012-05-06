@@ -67,11 +67,11 @@ function drawParent(paper, node, height) {
 
 function drawRootCir(paper, root) {
     var radius = paper.height * .35;
-    var rootCircle = paper.circle(0, radius, radius).attr({"fill-opacity" : 10,  "fill" : courtColors[root.court], "stroke" : '#999'});
+    var rootCircle = paper.circle(0, radius, radius).attr({"opacity" : 10,  "fill" : courtColors[root.court], "stroke" : '#999'});
     var num_parents = drawParent(paper, root, radius * 2);    
     var parent_offset = num_parents*parent_width;
     var label_x = parent_offset + (radius  - parent_offset)/2;
-    var attrs = {"font-size": 16};  
+    var attrs = {"font-size": 16, "font-weight": "bold"};  
     wrapText(paper, label_x, radius - padding, radius - (parent_offset + 2*padding), root.label(), attrs);
     rootCircle.transform('t' + parent_offset + ',0');
     return rootCircle; 
@@ -174,7 +174,8 @@ function drawTree(paper, root) {
 	    var x = root_width + padding + yearScale(c, root)*max_length;
 	    var y = getNodeY(y_offset, .75*paper.height, radius);
         // Draw line to node
-	    var path_string = "M" + rootCircle.attrs.cx + ","+ rootCircle.attrs.cy +"L" + x + "," + y;
+	    // var path_string = "M" + rootCircle.attrs.cx + ","+ rootCircle.attrs.cy +"L" + x + "," + y;
+	    var path_string = "M0," + y + "H" + x ;
         var path = paper.path(path_string);
         path.attr({"stroke": '#99bb88',"stroke-width": "2px"});
         // create node
