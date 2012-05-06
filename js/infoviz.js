@@ -1,6 +1,8 @@
 var padding = 10;
 var radius_scale = 1/40;
 var min_radius = 5;
+var root_width = 350;
+var parent_width = 20;
     
 function cleanID(rawString) {
     s = rawString.replace(/ /g,'');
@@ -21,15 +23,33 @@ function yearScale(child, root) {
     return yearsAfter/totalYears;
 }
 
+// http://stackoverflow.com/questions/3142007/how-to-either-determine-svg-text-box-width-or-force-line-breaks-after-x-chara
+function wrapText(paper, x, y, maxWidth, text, attrs) {
+    var t = paper.text(x, y).attr(attrs);
+    var words = text.split(" ");
+
+    var tempText = "";
+    for (var i=0; i<words.length; i++) {
+	t.attr("text", tempText + " " + words[i]);
+	if (t.getBBox().width > maxWidth) {
+	    tempText += "\n" + words[i];
+	} else {
+	    tempText += " " + words[i];
+	}
+    }
+    // Substring to ignore initial space
+    t.attr("text", tempText.substring(1));
+}
+
 function drawParent(paper, node, height) {
     if (node.parent == null) {
 	return 0;
     }
     console.log('drawing parent');
     var num_parents = drawParent(paper, node.parent, height);
-    var x = 20*num_parents;
+    var x = num_parents * parent_width;
     var attrs = {"fill": '#ddffcc',"stroke": '#99bb88', 'cursor': 'pointer'};
-    var rect = paper.rect(x, 0, 20, height).attr(attrs);
+    var rect = paper.rect(x, 0, parent_width, height).attr(attrs);
     rect.c = node.parent;
     // TODO: Maybe add tooltip with the case name?
     rect.hover(function() {
@@ -50,15 +70,11 @@ function drawParent(paper, node, height) {
 function drawRootCir(paper, root) {
     var radius = paper.height * .35;
     var rootCircle = paper.circle(0, radius, radius).attr("fill",'#ddffcc').attr("stroke", '#99bb88');
-    var num_parents = drawParent(paper, root, radius * 2);
-    
-    // todo: make title text wrap sanely
-    // http://stackoverflow.com/questions/3142007/how-to-either-determine-svg-text-box-width-or-force-line-breaks-after-x-chara
-    // http://rubyscale.com/blog/2010/11/22/embedding-arbitrary-html-into-raphaeljs/
-    var label = paper.text(radius/2, paper.height/4, root.label()).attr("font-size",14);
-    var transformation = 't' + num_parents * 20 + ',0';
-    rootCircle.transform(transformation);
-    label.transform(transformation);
+    var num_parents = drawParent(paper, root, radius * 2);    
+    var parent_offset = num_parents*parent_width;
+    var label_x = parent_offset + (radius  - parent_offset)/2;
+    var attrs = {"font-size": 16};  
+    wrapText(paper, label_x, paper.height/4, radius - (parent_offset + 2*padding), root.label(), attrs);
     return rootCircle; 
 }
 
