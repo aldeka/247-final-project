@@ -18,11 +18,12 @@ function getExtract(paper,root,title) {
         
         // Add wikipedia-based info about case
         // TODO: make this calculate vertical height of text block, so it doesn't overwrite the timeline...
+        // also make the text left-aligned, so it looks less terrible
         console.log(extract);
         var x = paper.width * .6;
-        var y = paper.height * .5 + 120 + padding;
+        var y = paper.height * .5 + 160 + padding;
         
-        wrapText(paper, x, y, paper.width - x/2, extract + '\n \n \n From ' + url, {'font-size': 12});
+        wrapText(paper, x, y, paper.width - x/2, 'Synopsis:\n \n \n ' + extract + '\n \n \n From ' + url, {'font-size': 12});
     });
 }
 
