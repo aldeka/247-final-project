@@ -1,23 +1,6 @@
 var padding = 10;
 var radius_scale = 1/40;
 var min_radius = 5;
-var root_width = 350;
-
-function makeTree(ulID, theCase) {
-    // recursive function for turning the cases into a tree of nested uls and lis
-    var theUL = $('#' + ulID);
-    theUL.append('<li>' + theCase.name + '</li>');
-    if (theCase.citedBy.length > 0) {
-        var theNewULID = cleanID(theCase.name).slice(0,9) +'-children';
-        theUL.append('<ul id="' + theNewULID + '"></ul>');
-        orderCitations(theCase.citedBy).forEach(function(item) {
-            //console.log(item.name)
-            makeTree(theNewULID,item);
-        });
-        var remainingCites = theCase.totalCites - theCase.citedBy.length;
-        $('#' + theNewULID).append('<li>' + remainingCites + ' more citations...');
-    }
-}
     
 function cleanID(rawString) {
     s = rawString.replace(/ /g,'');
@@ -42,6 +25,7 @@ function drawParent(paper, node, height) {
     if (node.parent == null) {
 	return 0;
     }
+    console.log('drawing parent');
     var num_parents = drawParent(paper, node.parent, height);
     var x = 20*num_parents;
     var attrs = {"fill": '#ddffcc',"stroke": '#99bb88', 'cursor': 'pointer'};
@@ -57,20 +41,25 @@ function drawParent(paper, node, height) {
 		   this.attr('fill', '#ddffcc');
 	       });
     rect.click(function() {
-	paper.clear();
-	drawTree(paper, this.c);
-    });
+	    paper.clear();
+	    drawTree(paper, this.c);
+        });
     return num_parents + 1;
 }
 
-function drawRootBox(paper, root) {
-    var root_box = paper.rect(0,0,root_width, .7*paper.height).attr("fill",'#ddffcc').attr("stroke", '#99bb88');
-    drawParent(paper, root, root_box.attrs['height']);
-
+function drawRootCir(paper, root) {
+    var radius = paper.height * .35;
+    var rootCircle = paper.circle(0, radius, radius).attr("fill",'#ddffcc').attr("stroke", '#99bb88');
+    var num_parents = drawParent(paper, root, radius * 2);
+    
     // todo: make title text wrap sanely
     // http://stackoverflow.com/questions/3142007/how-to-either-determine-svg-text-box-width-or-force-line-breaks-after-x-chara
     // http://rubyscale.com/blog/2010/11/22/embedding-arbitrary-html-into-raphaeljs/
-    paper.text(root_width/2, paper.height/4, root.label()).attr("font-size",14);  
+    var label = paper.text(radius/2, paper.height/4, root.label()).attr("font-size",14);
+    var transformation = 't' + num_parents * 20 + ',0';
+    rootCircle.transform(transformation);
+    label.transform(transformation);
+    return rootCircle; 
 }
 
 function getTickIncrement(min_year, max_year) {
@@ -90,6 +79,7 @@ function getTickIncrement(min_year, max_year) {
 }
 
 function drawTimeline(paper, max_length, root) {
+    var root_width = paper.height * .35;
     var start_x = root_width;
     var start_y = Math.floor(.7*paper.height);
     var width = paper.width - root_width;
@@ -114,7 +104,7 @@ function drawTimeline(paper, max_length, root) {
     for (var year = first_tick; year < max_year; year += tick_increment) {
 	var x = root_width + padding + (year-min_year)*year_width;
 	paper.path("M" + x + "," + (start_y - 5) + "V" + (start_y + height)).attr(line_attr);
-	var t = paper.text(x - 5, start_y + 5, year).attr(text_attr);
+	var t = paper.text(x - 10, start_y + 5, year).attr(text_attr);
 	var box = t.getBBox();
 	var label_offset = height + Math.SQRT2*box.height/2;
 	t.transform("t0," + label_offset+ "r-45");
@@ -148,13 +138,14 @@ function getNodeY(offset, graph_height, radius) {
 }
 
 function drawTree(paper, root) {
+    var root_width = paper.height * .35;
     //background
     paper.rect(0,0,paper.width,paper.height).attr("fill","white").attr("stroke","white");
-    drawRootBox(paper, root);
+    var rootCircle = drawRootCir(paper, root);
     var max_radius = root.citedBy.sort(influenceSort)[0].totalCites*radius_scale;
     var max_length = paper.width - root_width - max_radius - 2*padding;
     var y_offset = padding;
-
+    console.log(rootCircle.attrs.cx + ', ' + rootCircle.attrs.cy);
     drawLegend(paper, max_length, root);
 
     // make the child nodes
@@ -164,10 +155,10 @@ function drawTree(paper, root) {
         // set size and horiz position of node
         var radius = Math.max(c.totalCites*radius_scale, min_radius);
 
-	var x = root_width + padding + yearScale(c, root)*max_length;
-	var y = getNodeY(y_offset, .75*paper.height, radius);
+	    var x = root_width + padding + yearScale(c, root)*max_length;
+	    var y = getNodeY(y_offset, .75*paper.height, radius);
         // Draw line to node
-	var path_string = "M" + root_width + ","+ y +"H" + x;
+	    var path_string = "M" + rootCircle.attrs.cx + ","+ rootCircle.attrs.cy +"L" + x + "," + y;
         var path = paper.path(path_string);
         path.attr({"stroke": '#99bb88',"stroke-width": "2px"});
         // create node
@@ -213,6 +204,8 @@ function drawTree(paper, root) {
         if (c.citedBy.length > 0) {
             node.attr("cursor","pointer");
         }
+        // redraw root circle and label so it's on top
+        drawRootCir(paper, root);
     }
 };
 
