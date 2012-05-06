@@ -219,7 +219,7 @@ function drawTree(paper, root) {
 		        // reel clicked node back in
                 // TODO: remove glow--it hangs around and looks weird
                 var nodeAnim = this.animate({'cx': 0}, 1000 * this.attrs.cx / paper.width, 'easeOut');
-                this.path.animateWith(this, nodeAnim, {path: "M0," + y + "H0"}, 1000 * this.attrs.cx / paper.width, 'easeOut');
+                this.path.animateWith(this, nodeAnim, {path: "M0," + this.attrs.cy + "H0"}, 1000 * this.attrs.cx / paper.width, 'easeOut');
                 
                 // so that this waits for the animation to finish
                 setTimeout(function(){
