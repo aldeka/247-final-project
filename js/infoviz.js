@@ -175,14 +175,16 @@ function drawTree(paper, root) {
 	    var y = getNodeY(y_offset, .75*paper.height, radius);
         // Draw line to node
 	    // var path_string = "M" + rootCircle.attrs.cx + ","+ rootCircle.attrs.cy +"L" + x + "," + y;
-	    var path_string = "M0," + y + "H" + x ;
+	    var path_string = "M0," + y + "H0" ;
         var path = paper.path(path_string);
         path.attr({"stroke": '#99bb88',"stroke-width": "2px"});
         // create node
         // todo: make nodes that are negative (in root.undercutBy) look like bombs 
 	// (or otherwise look different)
-        var node = paper.circle(x, y, radius);
-        node.attr("fill",courtColors[c.court]).attr("stroke",courtColors[c.court]);
+        var node = paper.circle(0, y, radius).attr("fill",courtColors[c.court]).attr("stroke",courtColors[c.court]);
+        var nodeAnim = node.animate({'cx': x}, 1200, 'easeOut');
+        path.animateWith(node, nodeAnim, {path: "M0," + y + "H" + x}, 1200, 'easeOut');
+        setTimeout(function(node,x,y){ return; }, 3000);
         // let node know about its own case, other metadata
         node.radius = radius;
         node.x = x;
