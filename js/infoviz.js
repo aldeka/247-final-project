@@ -47,16 +47,16 @@ function drawParent(paper, node, height) {
     }
     var num_parents = drawParent(paper, node.parent, height);
     var x = num_parents * parent_width;
-    var attrs = {"fill-opacity" : 10,  "fill" : courtColors[node.parent.court], "stroke" : '#999', 'cursor': 'pointer', 'title': node.parent.name};
+    var attrs = {"fill" : courtColors[node.parent.court], "stroke" : '#999', 'cursor': 'pointer', 'title': node.parent.name};
     var rect = paper.rect(x, 0, parent_width, height).attr(attrs);
     rect.c = node.parent;
     rect.hover(function() {
         this.g = this.glow({color: "#bbb", width: 8});
-	this.attr('fill', '#aaa');
+	    this.attr('fill-opacity', 0.7);
     },
 	       function() {
 		   this.g.hide();
-		   this.attr('fill', courtColors[node.parent.court]);
+		   this.attr('fill-opacity', 1);
 	       });
     rect.click(function() {
 	    paper.clear();
@@ -67,12 +67,14 @@ function drawParent(paper, node, height) {
 
 function drawRootCir(paper, root) {
     var radius = paper.height * .35;
-    var rootCircle = paper.circle(0, radius, radius).attr({"opacity" : 10,  "fill" : courtColors[root.court], "stroke" : '#999'});
+    var rootCircleBG = paper.circle(0, radius, radius).attr({"fill" : '#fff', "stroke" : '#999'});
+    var rootCircle = paper.circle(0, radius, radius).attr({"opacity" : .4,  "fill" : courtColors[root.court], "stroke" : '#999'});
     var num_parents = drawParent(paper, root, radius * 2);    
     var parent_offset = num_parents*parent_width;
-    var label_x = parent_offset + (radius  - parent_offset)/2;
+    var label_x = parent_offset + radius/2;
     var attrs = {"font-size": 16, "font-weight": "bold"};  
     wrapText(paper, label_x, radius - padding, radius - (parent_offset + 2*padding), root.label(), attrs);
+    rootCircleBG.transform('t' + parent_offset + ',0');
     rootCircle.transform('t' + parent_offset + ',0');
     return rootCircle; 
 }
