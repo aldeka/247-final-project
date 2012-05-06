@@ -45,10 +45,9 @@ function drawParent(paper, node, height) {
     if (node.parent == null) {
 	return 0;
     }
-    console.log('drawing parent');
     var num_parents = drawParent(paper, node.parent, height);
     var x = num_parents * parent_width;
-    var attrs = {"fill": '#ddffcc',"stroke": '#99bb88', 'cursor': 'pointer'};
+    var attrs = {"fill": '#ddffcc',"stroke": '#99bb88', 'cursor': 'pointer', 'title': node.parent.name};
     var rect = paper.rect(x, 0, parent_width, height).attr(attrs);
     rect.c = node.parent;
     // TODO: Maybe add tooltip with the case name?
@@ -75,6 +74,7 @@ function drawRootCir(paper, root) {
     var label_x = parent_offset + (radius  - parent_offset)/2;
     var attrs = {"font-size": 16};  
     wrapText(paper, label_x, paper.height/4, radius - (parent_offset + 2*padding), root.label(), attrs);
+    rootCircle.transform('t' + parent_offset + ',0');
     return rootCircle; 
 }
 
