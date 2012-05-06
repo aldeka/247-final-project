@@ -4,6 +4,28 @@ var min_radius = 5;
 var root_width = 350;
 var parent_width = 20;
     
+    
+function getExtract(paper,root,title) {
+    //&prop=info&inprop=url
+    console.log(title);
+    $.getJSON('http://en.wikipedia.org/w/api.php?format=json&callback=?&action=query&titles=' + title + '&prop=extracts|info&inprop=url&exlimit=1&exintro&explaintext&redirects', function(data){
+        console.log(data);
+        var stuff = [];
+        for (var page in data.query.pages) {
+            var extract = data.query.pages[page].extract;
+            var url = data.query.pages[page].fullurl;
+        }
+        
+        // Add wikipedia-based info about case
+        // TODO: make this calculate vertical height of text block, so it doesn't overwrite the timeline...
+        console.log(extract);
+        var x = paper.width * .6;
+        var y = paper.height * .5 + 120 + padding;
+        
+        wrapText(paper, x, y, paper.width - x/2, extract + '\n \n \n From ' + url, {'font-size': 12});
+    });
+}
+
 function cleanID(rawString) {
     s = rawString.replace(/ /g,'');
     return s.replace(".","-");
@@ -66,7 +88,7 @@ function drawParent(paper, node, height) {
 }
 
 function drawRootCir(paper, root) {
-    var radius = paper.height * .35;
+    var radius = paper.height * .25;
     var rootCircleBG = paper.circle(0, radius, radius).attr({"fill" : '#fff', "stroke" : '#999'});
     var rootCircle = paper.circle(0, radius, radius).attr({"opacity" : .4,  "fill" : courtColors[root.court], "stroke" : '#999'});
     var num_parents = drawParent(paper, root, radius * 2);    
@@ -96,9 +118,9 @@ function getTickIncrement(min_year, max_year) {
 }
 
 function drawTimeline(paper, max_length, root, startX) {
-    var root_width = paper.height * .35;
+    var root_width = paper.height * .25;
     var start_x = startX;
-    var start_y = Math.floor(.7*paper.height);
+    var start_y = Math.floor(.5*paper.height);
     var width = paper.width - root_width;
     var height = 10;
     // TODO: Make the timeline not ugly.
@@ -130,17 +152,19 @@ function drawTimeline(paper, max_length, root, startX) {
 
 function drawLegend(paper, max_length, root, startX) {
     drawTimeline(paper, max_length, root, startX);
-    var y = .7*paper.height + 20;
+    
+    var y = .5*paper.height + 20;
     var text_attrs = {'text-anchor': 'start', 'font-size': '14'};
     var radius = 12;
     // Draw color circles + labels for the court classes
     // TODO: Maybe have mouseover on these highlight the corresponding cases in the graph?
     for (var court in courtColors) {
-	paper.circle(padding + radius, y + padding, radius).attr(
+	    paper.circle(padding + radius, y + padding, radius).attr(
 	    {"fill": courtColors[court], "stroke": courtColors[court]});
-	paper.text(2*(radius + padding), y + padding, court).attr(text_attrs);
-	y += 25 + padding;
+	    paper.text(2*(radius + padding), y + padding, court).attr(text_attrs);
+	    y += 25 + padding;
     }
+    
 }
 
 function getNodeY(offset, graph_height, radius) {
@@ -155,7 +179,7 @@ function getNodeY(offset, graph_height, radius) {
 }
 
 function drawTree(paper, root) {
-    var root_width = paper.height * .35;
+    var root_width = paper.height * .25;
     //background
     paper.rect(0,0,paper.width,paper.height).attr("fill","white").attr("stroke","white");
     var rootCircle = drawRootCir(paper, root);
@@ -174,7 +198,7 @@ function drawTree(paper, root) {
         var radius = Math.max(c.totalCites*radius_scale, min_radius);
 
 	    var x = root_width + padding + yearScale(c, root)*max_length;
-	    var y = getNodeY(y_offset, .75*paper.height, radius);
+	    var y = getNodeY(y_offset, .5*paper.height, radius);
         // Draw line to node
 	    // var path_string = "M" + rootCircle.attrs.cx + ","+ rootCircle.attrs.cy +"L" + x + "," + y;
 	    var path_string = "M0," + y + "H0" ;
@@ -232,11 +256,16 @@ function drawTree(paper, root) {
         if (c.citedBy.length > 0) {
             node.attr("cursor","pointer");
         }
-        // redraw root circle and label so it's on top
-        drawRootCir(paper, root);
         
         // TODO: make nodes always on top of lines
     }
+    
+    // get WP extract
+    getExtract(paper,root,root.name);
+    
+    // redraw root circle and label so it's on top
+    drawRootCir(paper, root);
+    
 };
 
     
