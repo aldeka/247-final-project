@@ -94,9 +94,9 @@ function getTickIncrement(min_year, max_year) {
     return increment;
 }
 
-function drawTimeline(paper, max_length, root) {
+function drawTimeline(paper, max_length, root, startX) {
     var root_width = paper.height * .35;
-    var start_x = root_width;
+    var start_x = startX;
     var start_y = Math.floor(.7*paper.height);
     var width = paper.width - root_width;
     var height = 10;
@@ -127,8 +127,8 @@ function drawTimeline(paper, max_length, root) {
     }
 }
 
-function drawLegend(paper, max_length, root) {
-    drawTimeline(paper, max_length, root);
+function drawLegend(paper, max_length, root, startX) {
+    drawTimeline(paper, max_length, root, startX);
     var y = .7*paper.height + 20;
     var text_attrs = {'text-anchor': 'start', 'font-size': '14'};
     var radius = 12;
@@ -162,7 +162,8 @@ function drawTree(paper, root) {
     var max_length = paper.width - root_width - max_radius - 2*padding;
     var y_offset = padding;
     console.log(rootCircle.attrs.cx + ', ' + rootCircle.attrs.cy);
-    drawLegend(paper, max_length, root);
+    
+    drawLegend(paper, max_length, root, rootCircle.attrs.cx + root_width);
 
     // make the child nodes
     var sorted_cases = root.citedBy.sort(yearSort);
