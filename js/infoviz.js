@@ -5,7 +5,7 @@ var root_width = 350;
 var parent_width = 20;
     
     
-function getExtract(paper,root,title) {
+function getExtract(paper,root,title, offset) {
     //&prop=info&inprop=url
     console.log(title);
     $.getJSON('http://en.wikipedia.org/w/api.php?format=json&callback=?&action=query&titles=' + title + '&prop=extracts|info&inprop=url&exlimit=1&exintro&explaintext&redirects', function(data){
@@ -17,12 +17,14 @@ function getExtract(paper,root,title) {
         }
         
         // Add wikipedia-based info about case
-        // TODO: make this calculate vertical height of text block, so it doesn't overwrite the timeline...
-        console.log(extract);
-        var x = paper.width * .6;
-        var y = paper.height * .5 + 120 + padding;
-        
-        wrapText(paper, x, y, paper.width - x/2, extract + '\n \n \n From ' + url, {'font-size': 12});
+        var x = offset *1.5
+        var y = paper.height * .5 + 60;
+        var attrs = {'font-size': 12, 'text-anchor': 'start'};
+        var t = wrapText(paper, x, y, paper.width - x, extract + '\n \n \n From ' + url, attrs);
+	// Text y attr is center, so shift text down by the difference between center and top
+	var box = t.getBBox();
+	var y_shift = y - box.y;
+	t.transform("t0," + y_shift);
     });
 }
 
@@ -61,6 +63,7 @@ function wrapText(paper, x, y, maxWidth, text, attrs) {
     }
     // Substring to ignore initial space
     t.attr("text", tempText.substring(1));
+    return t;
 }
 
 function drawParent(paper, node, height) {
@@ -136,9 +139,6 @@ function drawTimeline(paper, max_length, root, startX) {
     var first_tick = Math.ceil(min_year / tick_increment) * tick_increment;
     var year_width = max_length/(max_year - min_year);
 
-    console.log(start_x);
-    console.log(start_y);
-
     // Add tick marks and (angled?) labels.
     for (var year = first_tick; year < max_year; year += tick_increment) {
 	var x = root_width + padding + (year-min_year)*year_width;
@@ -186,7 +186,6 @@ function drawTree(paper, root) {
     var max_radius = root.citedBy.sort(influenceSort)[0].totalCites*radius_scale;
     var max_length = paper.width - root_width - max_radius - 2*padding;
     var y_offset = padding;
-    console.log(rootCircle.attrs.cx + ', ' + rootCircle.attrs.cy);
     
     drawLegend(paper, max_length, root, rootCircle.attrs.cx + root_width);
 
@@ -261,7 +260,7 @@ function drawTree(paper, root) {
     }
     
     // get WP extract
-    getExtract(paper,root,root.name);
+    getExtract(paper,root,root.name,rootCircle.attrs.r);
     
     // redraw root circle and label so it's on top
     drawRootCir(paper, root);
