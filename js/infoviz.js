@@ -189,6 +189,7 @@ function drawTree(paper, root) {
         node.x = x;
         node.y = y;
         node.c = c;
+        node.path = path;
 	
 	// Add 5 extra to leave room for labels
 	y_offset = node.y + radius + padding + 5;
@@ -208,14 +209,21 @@ function drawTree(paper, root) {
                    }); 
         // make nodes with descendants clickable
         if (c.citedBy.length > 0) {
-            node.click(function() {
+            node.click(function(event) {
                 event.preventDefault();
-		parent = root
-		root = this.c
-		root.parent = parent
-                // todo: make this a nice animation instead of (just) clearing
-                paper.clear();
-                drawTree(paper,root);
+		        parent = root
+		        root = this.c
+		        root.parent = parent;
+		        // reel clicked node back in
+                // TODO: remove glow--it hangs around and looks weird
+                var nodeAnim = this.animate({'cx': 0}, 1000 * this.attrs.cx / paper.width, 'easeOut');
+                this.path.animateWith(this, nodeAnim, {path: "M0," + y + "H0"}, 1000 * this.attrs.cx / paper.width, 'easeOut');
+                
+                // so that this waits for the animation to finish
+                setTimeout(function(){
+                    paper.clear();
+                    drawTree(paper,root);
+                    }, 1000 * this.attrs.cx / paper.width + 50);
             });
         }
         // Chnage cursor for nodes with defendants
