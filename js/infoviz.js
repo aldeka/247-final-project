@@ -20,7 +20,7 @@ function getExtract(paper,root,title, offset) {
         var x = offset *1.5
         var y = paper.height * .5 + 60;
         var attrs = {'font-size': 12, 'text-anchor': 'start'};
-        var t = wrapText(paper, x, y, paper.width - x, extract + '\n \n \n From ' + url, attrs);
+        var t = wrapText(paper, x, y, paper.width - x, 'Synopsis:\n \n \n ' + extract + '\n \n \n From ' + url, attrs);
 	// Text y attr is center, so shift text down by the difference between center and top
 	var box = t.getBBox();
 	var y_shift = y - box.y;
@@ -72,15 +72,13 @@ function drawParent(paper, node, height) {
     }
     var num_parents = drawParent(paper, node.parent, height);
     var x = num_parents * parent_width;
-    var attrs = {"fill" : courtColors[node.parent.court], "stroke" : '#999', 'cursor': 'pointer', 'title': node.parent.name};
+    var attrs = {"fill" : courtColors[node.parent.court], "stroke" : "#aaa", 'cursor': 'pointer', 'title': node.parent.name};
     var rect = paper.rect(x, 0, parent_width, height).attr(attrs);
     rect.c = node.parent;
     rect.hover(function() {
-        this.g = this.glow({color: "#bbb", width: 8});
 	    this.attr('fill-opacity', 0.7);
     },
 	       function() {
-		   this.g.hide();
 		   this.attr('fill-opacity', 1);
 	       });
     rect.click(function() {
@@ -92,7 +90,7 @@ function drawParent(paper, node, height) {
 
 function drawRootCir(paper, root) {
     var radius = paper.height * .25;
-    var rootCircleBG = paper.circle(0, radius, radius).attr({"fill" : '#fff', "stroke" : '#999'});
+    var rootCircleBG = paper.circle(0, radius, radius).attr({"fill" : '#fff', "stroke" : "#aaa"});
     var rootCircle = paper.circle(0, radius, radius).attr({"opacity" : .4,  "fill" : courtColors[root.court], "stroke" : '#999'});
     var num_parents = drawParent(paper, root, radius * 2);    
     var parent_offset = num_parents*parent_width;
@@ -202,7 +200,7 @@ function drawTree(paper, root) {
 	    // var path_string = "M" + rootCircle.attrs.cx + ","+ rootCircle.attrs.cy +"L" + x + "," + y;
 	    var path_string = "M0," + y + "H0" ;
         var path = paper.path(path_string);
-        path.attr({"stroke": '#99bb88',"stroke-width": "2px"});
+        path.attr({"stroke": "#aaa","stroke-width": "1px"});
         // create node
         // todo: make nodes that are negative (in root.undercutBy) look like bombs 
 	// (or otherwise look different)
@@ -240,7 +238,7 @@ function drawTree(paper, root) {
 		        root = this.c
 		        root.parent = parent;
 		        // reel clicked node back in
-                // TODO: remove glow--it hangs around and looks weird
+                this.g.hide();
                 var nodeAnim = this.animate({'cx': 0}, 1000 * this.attrs.cx / paper.width, 'easeOut');
                 this.path.animateWith(this, nodeAnim, {path: "M0," + this.attrs.cy + "H0"}, 1000 * this.attrs.cx / paper.width, 'easeOut');
                 
