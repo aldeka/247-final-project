@@ -182,9 +182,8 @@ function drawTree(paper, root) {
         // todo: make nodes that are negative (in root.undercutBy) look like bombs 
 	// (or otherwise look different)
         var node = paper.circle(0, y, radius).attr("fill",courtColors[c.court]).attr("stroke",courtColors[c.court]);
-        var nodeAnim = node.animate({'cx': x}, 1200, 'easeOut');
-        path.animateWith(node, nodeAnim, {path: "M0," + y + "H" + x}, 1200, 'easeOut');
-        setTimeout(function(node,x,y){ return; }, 3000);
+        var nodeAnim = node.animate({'cx': x}, 1800 * x / paper.width, 'easeOut');
+        path.animateWith(node, nodeAnim, {path: "M0," + y + "H" + x}, 1800 * x / paper.width, 'easeOut');
         // let node know about its own case, other metadata
         node.radius = radius;
         node.x = x;
