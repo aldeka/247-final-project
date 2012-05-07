@@ -194,11 +194,10 @@ function drawTree(paper, root) {
         // set size and horiz position of node
         var radius = Math.max(c.totalCites*radius_scale, min_radius);
 
-	    var x = root_width + padding + yearScale(c, root)*max_length;
-	    var y = getNodeY(y_offset, .5*paper.height, radius);
-        // Draw line to node
-	    // var path_string = "M" + rootCircle.attrs.cx + ","+ rootCircle.attrs.cy +"L" + x + "," + y;
-	    var path_string = "M0," + y + "H0" ;
+	var x = root_width + padding + yearScale(c, root)*max_length;
+	var y = getNodeY(y_offset, .5*paper.height, radius);
+  
+	var path_string = "M0," + y + "H0" ;
         var path = paper.path(path_string);
         path.attr({"stroke": "#aaa","stroke-width": "1px"});
         // create node
